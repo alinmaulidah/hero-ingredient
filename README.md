@@ -2,6 +2,8 @@
 
 Situs Astro statis untuk heroingredient.com. Berkas HTML/CSS/JS di-build ke `dist/` lalu dilayani oleh Nginx di dalam container.
 
+Repo ini **hanya frontend** — tidak punya database maupun panel admin. Katalog, akun pelanggan, pesanan, voucher, dan ongkir semuanya diambil dari backend Express + MySQL milik proyek **Indonesia Ingredient** melalui `PUBLIC_API_BASE`. Produk dikelola dari panel admin di `/admin` pada deployment Indonesia Ingredient.
+
 - **Deploy ke Coolify:** lihat [DEPLOY.md](./DEPLOY.md).
 - **Variabel lingkungan:** lihat [.env.example](./.env.example). Semua variabel `PUBLIC_*` bersifat *build-time* (di-embed saat `npm run build`), bukan runtime.
 

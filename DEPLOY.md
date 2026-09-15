@@ -111,22 +111,57 @@ Klik **Deploy**. Coolify akan menjalankan build (bisa beberapa menit karena `npm
 
 ## 4. Checklist sebelum go-live
 
-- [ ] `PUBLIC_API_BASE` menunjuk ke URL backend yang benar (HTTPS, tanpa `/` di akhir).
-- [ ] `PUBLIC_MIDTRANS_IS_PRODUCTION=true` dan client key berasal dari akun **produksi** Midtrans.
-- [ ] Server key Midtrans (mode produksi) sudah diset di **backend**, bukan di frontend ini.
+- [ ] Aplikasi **backend Indonesia Ingredient** sudah ter-deploy dan endpoint `GET /api/products` merespons JSON.
+- [ ] `PUBLIC_API_BASE` menunjuk ke URL backend tersebut (HTTPS, tanpa `/` di akhir).
+- [ ] `PUBLIC_MIDTRANS_IS_PRODUCTION` sama dengan `MIDTRANS_IS_PRODUCTION` di backend.
+- [ ] `PUBLIC_MIDTRANS_CLIENT_KEY` sesuai mode akun Midtrans yang dipakai backend.
+- [ ] `PUBLIC_GOOGLE_CLIENT_ID` sama dengan `GOOGLE_CLIENT_ID` di backend (atau keduanya dikosongkan).
+- [ ] Domain frontend sudah ditambahkan pada **Authorized JavaScript origins** bila login Google dipakai.
 - [ ] Backend mengizinkan CORS dari domain frontend.
-- [ ] `PUBLIC_GOOGLE_CLIENT_ID` sudah ditambahkan domain produksi pada **Authorized JavaScript origins** di Google Cloud Console.
 - [ ] Domain frontend sudah diarahkan (DNS) ke server Coolify.
-- [ ] Sudah diuji: halaman produk tampil, login berhasil, checkout menghasilkan Snap token.
+- [ ] Sudah diuji: katalog tampil dari database, login berhasil, checkout menghasilkan Snap token.
 
 ---
 
-## 5. Menyandingkan backend
+## 5. Menyambung ke backend Indonesia Ingredient
 
-Frontend ini hanya butuh satu hal dari backend: URL-nya di `PUBLIC_API_BASE`.
+Frontend ini **tidak punya database sendiri**. Seluruh data (katalog, pelanggan, pesanan, voucher, ongkir, pesan kontak) berasal dari backend Express + MySQL milik proyek **Indonesia Ingredient**, yang di-deploy sebagai aplikasi Coolify terpisah.
 
-- **Domain terpisah (paling sederhana):** backend di `https://api.heroingredient.com`, frontend di `https://heroingredient.com`. Set `PUBLIC_API_BASE=https://api.heroingredient.com` lalu pastikan CORS backend mengizinkan origin frontend.
-- **Satu domain (tanpa CORS):** letakkan backend di path seperti `/api` dan kosongkan `PUBLIC_API_BASE`. Ini menuntut konfigurasi reverse proxy tambahan di Coolify, jadi lakukan hanya bila memang diperlukan.
+Frontend hanya butuh URL backend itu di `PUBLIC_API_BASE`. Bila backend mati atau URL-nya salah, katalog otomatis jatuh ke data cadangan statis di `src/data/products.ts` (hanya berisi Turmeric), dan login/checkout/kontak tidak berfungsi.
+
+### 5.1 Yang harus disamakan antara frontend dan backend
+
+Ketiganya **wajib konsisten** — kalau tidak, fitur akan gagal tanpa pesan yang jelas:
+
+| Di frontend ini | Harus sama dengan | Akibat bila beda |
+| --- | --- | --- |
+| `PUBLIC_MIDTRANS_IS_PRODUCTION` | `MIDTRANS_IS_PRODUCTION` di `Backend/.env` | Snap gagal terbuka / token ditolak |
+| `PUBLIC_MIDTRANS_CLIENT_KEY` | `MIDTRANS_SERVER_KEY` di `Backend/.env` | Pembayaran gagal (client key sandbox ≠ server key produksi) |
+| `PUBLIC_GOOGLE_CLIENT_ID` | `GOOGLE_CLIENT_ID` di `Backend/.env` | Login Google gagal; backend menolak `id_token` |
+
+Catatan: bila `GOOGLE_CLIENT_ID` **kosong di backend**, biarkan `PUBLIC_GOOGLE_CLIENT_ID` juga kosong. Mengisinya di frontend saja justru akan memunculkan tombol Google yang selalu gagal.
+
+### 5.2 CORS
+
+Backend saat ini memakai `app.use(cors())` — semua origin diizinkan. Ini membuat penyambungan berhasil tanpa konfigurasi tambahan, **tetapi sebaiknya dikunci** ke domain resmi sebelum go-live dengan mengganti menjadi:
+
+```js
+app.use(cors({ origin: 'https://heroingredient.com' }));
+```
+
+Setelah dikunci, tambahkan juga origin domain staging/preview bila ada.
+
+### 5.3 Menguji sambungan sebelum deploy
+
+Jalankan backend secara lokal, lalu pastikan endpointnya hidup:
+
+```powershell
+npm --prefix ..\indonesiaingredient.com\Backend start
+Invoke-WebRequest http://localhost:5000/api/products -UseBasicParsing
+```
+
+Lalu buka `http://localhost:4321/products` — katalog harus menampilkan produk dari database (bukan hanya Turmeric).
+
 
 ---
 
@@ -149,3 +184,9 @@ Periksa pasangan `PUBLIC_MIDTRANS_CLIENT_KEY` dan `PUBLIC_MIDTRANS_IS_PRODUCTION
 
 **Container dinyatakan unhealthy**
 Pastikan **Ports Exposes** = `80` dan **Health Check Path** = `/healthz`.
+
+**Katalog hanya menampilkan Turmeric**
+Backend tidak terjangkau, sehingga frontend memakai data cadangan statis. Periksa `PUBLIC_API_BASE` (harus URL produksi, bukan `http://localhost:5000`) dan pastikan aplikasi backend berstatus running. Ingat, memperbaiki nilainya butuh **Redeploy**, bukan sekadar restart.
+
+**Halaman login/checkout error atau tombol Google selalu gagal**
+Cek konsistensi tabel pada bagian 5.1 — terutama pasangan Midtrans dan Google antara frontend dan backend.

@@ -51,17 +51,13 @@ export interface CatalogGroup {
   options: CatalogOption[];
 }
 
-/** Urutan kategori default (mengikuti daftar filter lama di products.astro). */
-const BASE_CATEGORIES = [
-  'Raw Material',
-  'Dry Slices',
-  'Grind',
-  'Powder',
-  'Extract Liquid',
-  'Extract Powder',
-  'Aromatic Water',
-  'Oil'
-];
+/**
+ * Urutan kategori default. Harus sama dengan nilai `category` yang dipakai
+ * pada tabel product_options di database backend — kategori yang tidak ada
+ * di sini tetap otomatis ditambahkan oleh catalogCategoriesFor() di bagian
+ * bawah, tetapi berada di urutan paling akhir.
+ */
+const BASE_CATEGORIES = ['Dry Slices', 'Grind', 'Ekstrak'];
 
 /** Union kategori: urutan dasar + kategori baru dari data (tanpa duplikat). */
 export function catalogCategoriesFor(groups: CatalogGroup[]): string[] {
