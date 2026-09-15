@@ -1,10 +1,9 @@
-# Astro Starter Kit: Basics
+# Hero Ingredient — Frontend
 
-```sh
-bun create astro@latest -- --template basics
-```
+Situs Astro statis untuk heroingredient.com. Berkas HTML/CSS/JS di-build ke `dist/` lalu dilayani oleh Nginx di dalam container.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+- **Deploy ke Coolify:** lihat [DEPLOY.md](./DEPLOY.md).
+- **Variabel lingkungan:** lihat [.env.example](./.env.example). Semua variabel `PUBLIC_*` bersifat *build-time* (di-embed saat `npm run build`), bukan runtime.
 
 ## 🚀 Project Structure
 

@@ -1,7 +1,26 @@
+# ---- Dependensi & hasil build: di-install/di-build ulang di dalam image ----
 node_modules
 dist
 .astro
+
+# ---- Rahasia: variabel publik dikirim sebagai build arg, bukan dari file ----
 .env
 .env.*
+
+# ---- Lockfile Bun: image memakai npm ci + package-lock.json ----
 bun.lock
+
+# ---- Metadata repo & editor: tidak dibutuhkan untuk build ----
 .git
+.gitignore
+.vscode
+.commandcode
+Dockerfile
+README.md
+CLAUDE.md
+AGENTS.md
+DEPLOY.md
+
+# ---- Sampah OS / log ----
+.DS_Store
+*.log
