@@ -1,0 +1,556 @@
+---
+import { company } from '../data/company';
+
+// Mendapatkan path halaman saat ini
+const currentPath = Astro.url.pathname;
+const { brand, nav } = company;
+---
+
+<header class="navbar">
+  <div class="container nav-container">
+
+    <!-- LOGO -->
+    <a href="/" class="nav-logo" aria-label={brand.ariaLabel}>
+      <span class="logo-main">{brand.logoMain}</span>
+      <span class="logo-sub">{brand.logoSub}</span>
+    </a>
+
+    <!-- AREA KANAN -->
+    <div class="nav-actions">
+
+      <!-- LANGUAGE SWITCHER -->
+      <div class="lang-switcher">
+        <button
+          class="lang-btn active"
+          type="button"
+          data-lang="id"
+          aria-label="Bahasa Indonesia"
+        >
+          <svg
+            class="flag-img"
+            viewBox="0 0 32 32"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g clip-path="url(#clip-id)">
+              <rect width="32" height="16" fill="#e70011" />
+              <rect y="16" width="32" height="16" fill="#ffffff" />
+            </g>
+
+            <defs>
+              <clipPath id="clip-id">
+                <circle cx="16" cy="16" r="16" />
+              </clipPath>
+            </defs>
+          </svg>
+
+          <span class="lang-code">ID</span>
+        </button>
+
+        <button
+          class="lang-btn"
+          type="button"
+          data-lang="en"
+          aria-label="English"
+        >
+          <svg
+            class="flag-img"
+            viewBox="0 0 32 32"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g clip-path="url(#clip-uk)">
+              <rect width="32" height="32" fill="#012169" />
+
+              <path
+                d="M0,0 L32,32 M32,0 L0,32"
+                stroke="#ffffff"
+                stroke-width="4"
+              />
+
+              <path
+                d="M0,0 L32,32 M32,0 L0,32"
+                stroke="#C8102E"
+                stroke-width="2"
+              />
+
+              <path
+                d="M16,0 V32 M0,16 H32"
+                stroke="#ffffff"
+                stroke-width="6"
+              />
+
+              <path
+                d="M16,0 V32 M0,16 H32"
+                stroke="#C8102E"
+                stroke-width="3.5"
+              />
+            </g>
+
+            <defs>
+              <clipPath id="clip-uk">
+                <circle cx="16" cy="16" r="16" />
+              </clipPath>
+            </defs>
+          </svg>
+
+          <span class="lang-code">EN</span>
+        </button>
+      </div>
+
+      <!-- TOMBOL MASUK / KELUAR PELANGGAN -->
+      <a
+        href="/login"
+        id="nav-auth-btn"
+        class="nav-auth-btn"
+        data-lang-id="Masuk"
+        data-lang-en="Log In"
+      >
+        Masuk
+      </a>
+
+      <!-- HAMBURGER -->
+      <button
+        id="hamburger-btn"
+        class="hamburger"
+        type="button"
+        aria-label="Toggle Menu"
+        aria-expanded="false"
+      >
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav id="nav-menu" class="nav-menu">
+
+      {nav.map((item) => (
+        <a
+          href={item.href}
+          class={`nav-link ${
+            item.href === '/'
+              ? currentPath === '/' ? 'active' : ''
+              : currentPath.startsWith(item.href) ? 'active' : ''
+          }`}
+          data-lang-id={item.labelId}
+          data-lang-en={item.labelEn}
+        >
+          {item.labelId}
+        </a>
+      ))}
+
+    </nav>
+
+  </div>
+</header>
+
+<style>
+  /* ========================================
+     NAVBAR — hanya gaya spesifik navbar
+     (token & .container global dari global.css)
+  ======================================== */
+
+  .navbar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    z-index: 1000;
+  }
+
+  .nav-container {
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  /* LOGO */
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    line-height: 1;
+    white-space: nowrap;
+    z-index: 1002;
+  }
+
+  .logo-main {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    letter-spacing: 1.4px;
+  }
+
+  .logo-sub {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--primary);
+    letter-spacing: 1.4px;
+  }
+
+  .nav-logo:hover .logo-sub {
+    color: var(--primary-light);
+    transition: color 0.25s ease;
+  }
+
+  /* DESKTOP NAVIGATION */
+  .nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-left: auto;
+    margin-right: 24px;
+  }
+
+  .nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 68px;
+    padding: 0;
+    text-decoration: none;
+    color: #374151;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.2s ease, font-weight 0.2s ease;
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    color: var(--primary);
+  }
+
+  .nav-link.active {
+    font-weight: 600;
+  }
+
+  .nav-link.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 15px;
+    height: 2px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+
+  /* RIGHT ACTIONS */
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    order: 3;
+  }
+
+  /* TOMBOL MASUK / KELUAR */
+  .nav-auth-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 18px;
+    border: 1.5px solid var(--primary);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .nav-auth-btn:hover {
+    background: var(--primary);
+    color: #ffffff;
+  }
+
+  .nav-auth-btn.logged-in {
+    border-color: #cbd5e1;
+    color: #475569;
+  }
+
+  .nav-auth-btn.logged-in:hover {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  /* LANGUAGE SWITCHER */
+  .lang-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    background: #e2e8f0;
+    border-radius: 999px;
+  }
+
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: none;
+    background: transparent;
+    padding: 5px 9px;
+    border-radius: 999px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .lang-btn.active {
+    background: #ffffff;
+    color: #334155;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .flag-img {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  }
+
+  .lang-code {
+    letter-spacing: 0.2px;
+  }
+
+  /* HAMBURGER */
+  .hamburger {
+    display: none;
+    width: 28px;
+    height: 22px;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    z-index: 1002;
+  }
+
+  .hamburger .bar {
+    width: 100%;
+    height: 3px;
+    background: var(--primary-dark);
+    border-radius: 3px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  /* Hamburger → X */
+  .hamburger.open .bar:nth-child(1) {
+    transform: translateY(9.5px) rotate(45deg);
+  }
+
+  .hamburger.open .bar:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger.open .bar:nth-child(3) {
+    transform: translateY(-9.5px) rotate(-45deg);
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    .navbar {
+      height: 62px;
+    }
+
+    .container {
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+
+    .nav-container {
+      min-height: 62px;
+    }
+
+    /* Logo lebih kecil */
+    .logo-main,
+    .logo-sub {
+      font-size: 15px;
+      letter-spacing: 1px;
+    }
+
+    .nav-logo {
+      gap: 5px;
+    }
+
+    .nav-actions {
+      gap: 8px;
+    }
+
+    .lang-switcher {
+      padding: 2px;
+    }
+
+    .lang-btn {
+      padding: 4px 7px;
+      font-size: 11px;
+    }
+
+    .flag-img {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* Hamburger tampil */
+    .hamburger {
+      display: flex;
+    }
+
+    /* MOBILE SIDE MENU */
+    .nav-menu {
+      position: fixed;
+      top: 62px;
+      right: -100%;
+      width: 78%;
+      max-width: 320px;
+      height: calc(100vh - 62px);
+      margin: 0;
+      padding: 24px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 0;
+      background: #ffffff;
+      box-shadow: -8px 0 25px rgba(0, 0, 0, 0.1);
+      transition: right 0.28s ease;
+      overflow-y: auto;
+      z-index: 1001;
+    }
+
+    .nav-menu.active {
+      right: 0;
+    }
+
+    .nav-link {
+      width: 100%;
+      height: auto;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .nav-link:first-child {
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .nav-link.active {
+      font-weight: 700;
+    }
+
+    /* Hilangkan garis desktop */
+    .nav-link.active::after {
+      display: none;
+    }
+  }
+
+  /* SMALL MOBILE — brand "INDONESIA INGREDIENTS" lebih panjang dari sebelumnya,
+     jadi logo & tombol kanan dirapatkan agar semua elemen tetap masuk layar. */
+  @media (max-width: 480px) {
+    .container {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    .logo-main,
+    .logo-sub {
+      font-size: 12px;
+      letter-spacing: 0.4px;
+    }
+
+    .nav-logo {
+      gap: 4px;
+    }
+
+    .nav-actions {
+      gap: 5px;
+    }
+
+    .lang-btn {
+      padding: 3px 5px;
+    }
+
+    .lang-code {
+      font-size: 10px;
+    }
+
+    .flag-img {
+      width: 15px;
+      height: 15px;
+    }
+
+    .hamburger {
+      width: 24px;
+      height: 19px;
+    }
+
+    .nav-auth-btn {
+      height: 32px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .nav-menu {
+      width: 82%;
+      padding: 20px 18px;
+    }
+  }
+
+  /* LAYAR SANGAT KECIL */
+  @media (max-width: 380px) {
+    .logo-main,
+    .logo-sub {
+      font-size: 10.5px;
+      letter-spacing: 0.2px;
+    }
+  }
+</style>
+
+<script>
+  import { clearAuth, getStoredUser, isLoggedIn } from '../lib/customer/api';
+
+  // Tombol Masuk → berubah menjadi "Keluar" bila sudah ada sesi pelanggan.
+  const authBtn = document.getElementById('nav-auth-btn');
+  if (authBtn && isLoggedIn()) {
+    const user = getStoredUser();
+    if (user) {
+      authBtn.classList.add('logged-in');
+      authBtn.textContent = 'Keluar';
+      authBtn.setAttribute('aria-label', 'Keluar dari akun');
+
+      // Jangan biarkan teksnya tertimpa oleh pengalih bahasa.
+      authBtn.removeAttribute('data-lang-id');
+      authBtn.removeAttribute('data-lang-en');
+
+      authBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearAuth();
+        window.location.replace('/');
+      });
+    }
+  }
+</script>

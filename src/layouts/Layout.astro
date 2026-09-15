@@ -1,23 +1,155 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { company } from '../data/company';
+import '../styles/global.css';
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+interface Props {
+  title?: string;
+  /** CSS tambahan per halaman (mis. "/styles/products.css"). */
+  stylesheet?: string;
+}
+
+const { title = company.meta.defaultTitle, stylesheet } = Astro.props;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+
+    <!-- Google Fonts untuk tampilan elegan -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    {stylesheet && <link rel="stylesheet" href={stylesheet} />}
+  </head>
+  <body>
+    <!-- Navbar ditampilkan di atas semua halaman -->
+    <Navbar />
+
+    <!-- Konten dari halaman (index.astro, contact.astro, dll) akan masuk di slot ini -->
+    <slot />
+
+    <!-- Footer ditampilkan di bawah semua halaman -->
+    <Footer />
+
+    <!-- Tombol WhatsApp melayang, sekali untuk semua halaman -->
+    <WhatsAppButton />
+
+    <!--
+      SCRIPT GLOBAL (SATU-SATUNYA MESIN):
+      1. Multi-bahasa (autoswitch ID/EN)
+      2. Menu mobile (hamburger)
+      Dipasang is:inline agar berjalan sebelum first paint.
+    -->
+    <script is:inline>
+      // ============================================
+      // 1. MULTI-BAHASA
+      // ============================================
+      const LANG_KEY = 'selectedLanguage';
+
+      function applyLanguage(lang) {
+        localStorage.setItem(LANG_KEY, lang);
+        document.documentElement.lang = lang;
+
+        // Ganti teks semua elemen ber-atribut data-lang-id & data-lang-en
+        const elements = document.querySelectorAll('[data-lang-id][data-lang-en]');
+
+        elements.forEach((el) => {
+          const textId = el.getAttribute('data-lang-id');
+          const textEn = el.getAttribute('data-lang-en');
+
+          if (lang === 'en' && textEn) {
+            // Placeholder untuk input/textarea
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+              el.setAttribute('placeholder', textEn);
+            } else {
+              el.textContent = textEn;
+            }
+          } else if (lang === 'id' && textId) {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+              el.setAttribute('placeholder', textId);
+            } else {
+              el.textContent = textId;
+            }
+          }
+        });
+
+        // Update status aktif tombol bahasa (Navbar/Footer)
+        const langBtns = document.querySelectorAll('.lang-btn, [data-lang]');
+        langBtns.forEach((btn) => {
+          const btnLang = btn.getAttribute('data-lang');
+          if (btnLang === lang) {
+            btn.classList.add('active');
+          } else if (btnLang) {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      function initLanguage() {
+        const savedLang = localStorage.getItem(LANG_KEY) || 'id';
+        applyLanguage(savedLang);
+      }
+
+      // Delegasi klik untuk semua elemen [data-lang]
+      document.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-lang]');
+        if (target) {
+          e.preventDefault();
+          const chosenLang = target.getAttribute('data-lang');
+          if (chosenLang) {
+            applyLanguage(chosenLang);
+          }
+        }
+      });
+
+      // ============================================
+      // 2. MENU MOBILE (HAMBURGER)
+      // ============================================
+      function initMobileMenu() {
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const navMenu = document.getElementById('nav-menu');
+        if (!hamburgerBtn || !navMenu) return;
+
+        hamburgerBtn.addEventListener('click', () => {
+          const isOpen = hamburgerBtn.classList.toggle('open');
+          navMenu.classList.toggle('active');
+          hamburgerBtn.setAttribute('aria-expanded', String(isOpen));
+          document.body.classList.toggle('menu-open', isOpen);
+        });
+
+        // Tutup menu setelah link diklik
+        navMenu.querySelectorAll('.nav-link').forEach((link) => {
+          link.addEventListener('click', () => {
+            hamburgerBtn.classList.remove('open');
+            navMenu.classList.remove('active');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('menu-open');
+          });
+        });
+      }
+
+      // ============================================
+      // INISIALISASI
+      // ============================================
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          initLanguage();
+          initMobileMenu();
+        });
+      } else {
+        initLanguage();
+        initMobileMenu();
+      }
+    </script>
+  </body>
+</html>

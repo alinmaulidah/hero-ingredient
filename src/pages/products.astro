@@ -1,0 +1,807 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { productGroups } from '../data/products';
+import { buildCategoryPillsHtml, buildGridHtml } from '../lib/catalogHtml';
+import { catalogCategoriesFor, fromStaticData, type CatalogGroup } from '../lib/catalogData';
+
+/**
+ * Fallback statis dipakai untuk HTML awal (SSR) dan bila API tidak
+ * terjangkau. Saat halaman dibuka, script client akan mengambil data
+ * live dari Backend (GET /api/products) dan memperbarui grid bila beda.
+ */
+const fallbackGroups: CatalogGroup[] = fromStaticData(productGroups);
+const fallbackCategories = catalogCategoriesFor(fallbackGroups);
+---
+
+<Layout title="Katalog Produk - " stylesheet="/styles/products.css">
+
+  <main class="products-page">
+
+    <!-- =========================================
+         KATALOG PRODUK
+    ========================================== -->
+    <section class="catalog-section">
+      <div class="container">
+
+        <!-- TOOLBAR -->
+        <div class="catalog-toolbar">
+
+          <div class="currency-group">
+            <label for="currency-select">Mata Uang:</label>
+
+            <select id="currency-select">
+              <option value="IDR">IDR (Rupiah - Indonesia)</option>
+              <option value="USD">USD ($ - Export)</option>
+              <option value="AED">AED (Emirates Dirham)</option>
+              <option value="EUR">EUR (€ - Euro)</option>
+            </select>
+          </div>
+
+          <button id="open-cart-btn" class="cart-trigger">
+
+            <svg
+              class="icon-cart-header"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="9" cy="21" r="1"/>
+              <circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+
+            <span>
+              Keranjang (<strong id="cart-count">0</strong>)
+            </span>
+
+          </button>
+
+        </div>
+
+
+        <!-- =========================================
+             FILTER KATEGORI (isi awal dari data
+             statis, diperbarui script saat API merespons)
+        ========================================== -->
+        <div class="category-filter-container">
+          <div class="category-pills" id="category-pills" set:html={buildCategoryPillsHtml(fallbackCategories)}>
+          </div>
+        </div>
+
+
+        <!-- =========================================
+             PRODUCT GRID (isi awal dari data statis,
+             diperbarui dari API oleh script di bawah)
+        ========================================== -->
+        <div class="product-grid" id="product-grid" set:html={buildGridHtml(fallbackGroups)}>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =========================================
+         OVERLAY
+    ========================================== -->
+    <div id="cart-overlay" class="cart-overlay"></div>
+
+
+    <!-- =========================================
+         SIDEBAR KERANJANG
+    ========================================== -->
+    <aside
+      id="cart-sidebar"
+      class="cart-sidebar"
+      aria-label="Keranjang Belanja"
+    >
+
+      <!-- HEADER CART -->
+      <div class="cart-header">
+
+        <div class="cart-header-title">
+
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="9" cy="21" r="1"/>
+            <circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+
+          <div>
+            <h3>Keranjang Belanja</h3>
+            <span id="cart-header-count">
+              0 produk
+            </span>
+          </div>
+
+        </div>
+
+
+        <button
+          id="close-cart-btn"
+          class="close-btn"
+          aria-label="Tutup keranjang"
+        >
+          &times;
+        </button>
+
+      </div>
+
+
+      <!-- BODY CART -->
+      <div id="cart-items" class="cart-body">
+
+        <div class="empty-cart-state">
+
+          <div class="empty-cart-icon">
+
+            <svg
+              width="42"
+              height="42"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="9" cy="21" r="1"/>
+              <circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+
+          </div>
+
+          <h4>Keranjang masih kosong</h4>
+
+          <p>
+            Tambahkan produk yang ingin Anda beli.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- FOOTER CART -->
+      <div class="cart-footer">
+
+        <div class="cart-summary-row">
+
+          <div>
+            <span class="summary-label">
+              Total Pembayaran
+            </span>
+
+            <span class="summary-note">
+              Belum termasuk biaya tambahan
+            </span>
+          </div>
+
+          <span
+            id="cart-total-price"
+            class="summary-amount"
+          >
+            Rp 0
+          </span>
+
+        </div>
+
+
+        <button
+          id="pay-button"
+          class="checkout-btn"
+        >
+          Bayar Langsung Sekarang
+        </button>
+
+      </div>
+
+    </aside>
+
+  </main>
+
+</Layout>
+
+<script>
+  import { productGroups } from '../data/products';
+  import { buildCategoryPillsHtml, buildGridHtml, escapeHtml } from '../lib/catalogHtml';
+  import {
+    catalogCategoriesFor,
+    fetchCatalog,
+    fromStaticData,
+    resolveImageUrl,
+    type CatalogGroup,
+    type CatalogOption
+  } from '../lib/catalogData';
+  import {
+    isLoggedIn,
+    loadCart,
+    loadCartCurrency,
+    saveCart,
+    saveCartCurrency,
+    type CartItem
+  } from '../lib/customer/api';
+
+  const API_BASE = (import.meta.env.PUBLIC_API_BASE || '').replace(/\/$/, '');
+
+  /* =========================================
+     STATE
+  ========================================== */
+
+  /** Data aktif — fallback statis dulu, diganti data live bila API berhasil. */
+  let groups: CatalogGroup[] = fromStaticData(productGroups);
+
+  // Keranjang & mata uang disimpan di localStorage supaya tidak hilang saat
+  // pindah ke halaman login/checkout maupun saat halaman di-reload.
+  let cart: CartItem[] = loadCart();
+  let currentCurrency = loadCartCurrency();
+  let selectedCategory = 'All';
+  let categories = catalogCategoriesFor(groups);
+  /** pilihan aktif per kartu: { [groupId]: { optionId, variantIndex } } */
+  let selectedOptionsState: Record<string, { optionId: string; variantIndex: number }> = {};
+
+  function initSelectedState() {
+    const state: Record<string, { optionId: string; variantIndex: number }> = {};
+    groups.forEach((group) => {
+      if (group.options && group.options[0]) {
+        state[group.id] = { optionId: group.options[0].id, variantIndex: 0 };
+      }
+    });
+    selectedOptionsState = state;
+  }
+
+  initSelectedState();
+
+  /* =========================================
+     HELPERS
+  ========================================== */
+
+  function getGroupById(groupId: string): CatalogGroup | null {
+    return groups.find((g) => g.id === groupId) || null;
+  }
+
+  function getOptionById(group: CatalogGroup | null, optionId: string): CatalogOption | null {
+    if (!group || !group.options) return null;
+    return group.options.find((opt) => opt.id === optionId) || group.options[0] || null;
+  }
+
+  function getVariantPrice(variant: CatalogOption['variants'][number], curr: string): number {
+    if (curr === 'USD') return Number(variant.priceUSD) || 0;
+    if (curr === 'AED') return Number(variant.priceAED) || 0;
+    if (curr === 'EUR') return Number(variant.priceEUR) || 0;
+    return Number(variant.priceIDR) || 0;
+  }
+
+  function formatPrice(val: number, curr: string): string {
+    if (curr === 'IDR') return `Rp ${val.toLocaleString('id-ID')}`;
+    if (curr === 'USD') return `$ ${val.toFixed(2)}`;
+    if (curr === 'AED') return `${val.toFixed(2)} AED`;
+    if (curr === 'EUR') return `€ ${val.toFixed(2)}`;
+    return `${val}`;
+  }
+
+  /* =========================================
+     UPDATE HARGA KARTU
+  ========================================== */
+
+  function updateCardPriceUI(groupId: string) {
+    const group = getGroupById(groupId);
+    const state = selectedOptionsState[groupId];
+    if (!group || !state) return;
+
+    const selectedOption = getOptionById(group, state.optionId);
+    if (!selectedOption || !selectedOption.variants.length) return;
+
+    const selectedVariant =
+      selectedOption.variants[state.variantIndex] || selectedOption.variants[0];
+
+    const priceEl = document.getElementById(`price-${groupId}`);
+    if (priceEl) {
+      priceEl.textContent = formatPrice(getVariantPrice(selectedVariant, currentCurrency), currentCurrency);
+    }
+  }
+
+  function updateAllCardPrices() {
+    groups.forEach((group) => updateCardPriceUI(group.id));
+  }
+
+  /* =========================================
+     RENDER ULANG KATALOG
+  ========================================== */
+
+  function applyCategoryFilter() {
+    document.querySelectorAll('.product-card').forEach((card) => {
+      const cardCategories = ((card as HTMLElement).dataset.category || '')
+        .split(',')
+        .map((c) => c.trim());
+      (card as HTMLElement).style.display =
+        selectedCategory === 'All' || cardCategories.includes(selectedCategory)
+          ? 'flex'
+          : 'none';
+    });
+  }
+
+  function rerenderCards() {
+    const grid = document.getElementById('product-grid');
+    if (!grid) return;
+    grid.innerHTML = buildGridHtml(groups, API_BASE);
+    applyCategoryFilter();
+    updateAllCardPrices();
+  }
+
+  function rerenderCategoryPills() {
+    const box = document.getElementById('category-pills');
+    if (!box) return;
+    box.innerHTML = buildCategoryPillsHtml(categories, selectedCategory);
+  }
+
+  /** HTML tombol kemasan untuk satu opsi (dipakai saat ganti "Jenis"). */
+  function sizePillsHtml(groupId: string, option: CatalogOption): string {
+    const pills = option.variants
+      .map(
+        (variant, index) => `
+          <button
+            type="button"
+            class="size-pill ${index === 0 ? 'active' : ''}"
+            data-group-id="${escapeHtml(groupId)}"
+            data-option-id="${escapeHtml(option.id)}"
+            data-index="${index}"
+          >
+            ${escapeHtml(variant.size)}
+          </button>`
+      )
+      .join('\n');
+
+    return `
+      <span class="size-label">
+        Kemasan:
+      </span>
+      <div class="size-pills">
+${pills}
+      </div>`;
+  }
+
+  /* =========================================
+     PILIHAN JENIS (OPTION) — event delegation
+  ========================================== */
+
+  function handleOptionClick(pill: HTMLElement) {
+    const groupId = pill.dataset.groupId;
+    const optionId = pill.dataset.optionId;
+    const parentCard = pill.closest('.product-card');
+    if (!parentCard || !groupId || !optionId) return;
+
+    const group = getGroupById(groupId);
+    const newOption = getOptionById(group, optionId);
+    const state = selectedOptionsState[groupId];
+    if (!newOption || !state) return;
+
+    /* aktifkan pill jenis terpilih */
+    parentCard.querySelectorAll('.option-pill').forEach((btn) => btn.classList.remove('active'));
+    pill.classList.add('active');
+
+    /* reset ke varian pertama bila jenis berubah */
+    if (state.optionId !== newOption.id) {
+      state.optionId = newOption.id;
+      state.variantIndex = 0;
+    }
+
+    /* ganti gambar produk */
+    parentCard.querySelectorAll('.option-image').forEach((img) => {
+      (img as HTMLElement).classList.toggle('active', img.getAttribute('data-option-image') === newOption.id);
+    });
+
+    /* ganti tag kategori */
+    const specTag = parentCard.querySelector('[data-spec-tag]');
+    if (specTag) {
+      specTag.textContent = newOption.category || '';
+    }
+
+    /* ganti daftar kemasan sesuai opsi */
+    const sizeArea = parentCard.querySelector('[data-variant-area]');
+    if (sizeArea) {
+      sizeArea.innerHTML = sizePillsHtml(groupId, newOption);
+    }
+
+    updateCardPriceUI(groupId);
+  }
+
+  /* =========================================
+     PILIHAN KEMASAN (VARIANT)
+  ========================================== */
+
+  function handleSizeClick(pill: HTMLElement) {
+    const groupId = pill.dataset.groupId;
+    const optionId = pill.dataset.optionId;
+    const index = parseInt(pill.dataset.index || '0', 10);
+    const parentCard = pill.closest('.product-card');
+    if (!parentCard || !groupId) return;
+
+    const state = selectedOptionsState[groupId];
+    if (!state) return;
+
+    parentCard.querySelectorAll('.size-pill').forEach((btn) => btn.classList.remove('active'));
+    pill.classList.add('active');
+
+    state.variantIndex = index;
+    if (optionId) {
+      state.optionId = optionId;
+    }
+
+    updateCardPriceUI(groupId);
+  }
+
+  /* =========================================
+     ADD TO CART
+  ========================================== */
+
+  function handleAddToCart(btn: HTMLElement) {
+    const groupId = btn.dataset.groupId;
+    if (!groupId) return;
+
+    const group = getGroupById(groupId);
+    const state = selectedOptionsState[groupId];
+    if (!group || !state) return;
+
+    const selectedOption = getOptionById(group, state.optionId);
+    if (!selectedOption) return;
+
+    const variant = selectedOption.variants[state.variantIndex] || selectedOption.variants[0];
+    if (!variant) return;
+
+    const cartItemId = `${group.id}-${selectedOption.id}-${variant.size
+      .replace(/\s+/g, '')
+      .toLowerCase()}`;
+
+    const existingIndex = cart.findIndex((item) => item.cartItemId === cartItemId);
+
+    if (existingIndex > -1) {
+      cart[existingIndex].qty += 1;
+    } else {
+      cart.push({
+        cartItemId,
+        name: group.name,
+        optionName: selectedOption.name,
+        spec: selectedOption.spec || '',
+        category: selectedOption.category || '',
+        grade: selectedOption.grade || '',
+        size: variant.size,
+        imageUrl: selectedOption.imageUrl || '/images/products/placeholder.svg',
+        prices: {
+          IDR: Number(variant.priceIDR) || 0,
+          USD: Number(variant.priceUSD) || 0,
+          AED: Number(variant.priceAED) || 0,
+          EUR: Number(variant.priceEUR) || 0
+        },
+        qty: 1
+      });
+    }
+
+    updateCartUI();
+    openCart();
+  }
+
+  /* =========================================
+     PILIHAN KATEGORI DI DALAM KARTU
+  ========================================== */
+
+  function handleCategoryClick(chip: HTMLElement) {
+    const parentCard = chip.closest('.product-card');
+    const category = chip.dataset.categoryPill;
+    if (!parentCard || !category) return;
+
+    parentCard.querySelectorAll('.category-pill').forEach((c) => {
+      c.classList.toggle('active', c === chip);
+    });
+
+    // tampilkan hanya jenis dari kategori terpilih
+    parentCard.querySelectorAll<HTMLElement>('.option-pill').forEach((pill) => {
+      pill.classList.toggle('opt-hidden', pill.dataset.cat !== category);
+    });
+
+    // pindah ke jenis pertama pada kategori itu
+    const firstPill = Array.from(
+      parentCard.querySelectorAll<HTMLElement>('.option-pill')
+    ).find((pill) => !pill.classList.contains('opt-hidden'));
+    if (firstPill) {
+      handleOptionClick(firstPill);
+    }
+  }
+
+  /* =========================================
+     DELEGASI KLIK (grid & kategori)
+  ========================================== */
+
+  document.getElementById('product-grid')?.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+
+    const categoryPill = target.closest<HTMLElement>('.category-pill');
+    if (categoryPill) {
+      handleCategoryClick(categoryPill);
+      return;
+    }
+
+    const pill = target.closest<HTMLElement>('.option-pill');
+    if (pill) {
+      handleOptionClick(pill);
+      return;
+    }
+
+    const sizePill = target.closest<HTMLElement>('.size-pill');
+    if (sizePill) {
+      handleSizeClick(sizePill);
+      return;
+    }
+
+    const addBtn = target.closest<HTMLElement>('.btn-add-cart-icon');
+    if (addBtn) {
+      handleAddToCart(addBtn);
+    }
+  });
+
+  document.getElementById('category-pills')?.addEventListener('click', (e) => {
+    const target = (e.target as HTMLElement | null)?.closest<HTMLElement>('.category-btn');
+    if (!target) return;
+
+    selectedCategory = target.dataset.category || 'All';
+    rerenderCategoryPills();
+    applyCategoryFilter();
+  });
+
+  /* =========================================
+     CURRENCY
+  ========================================== */
+
+  document.getElementById('currency-select')?.addEventListener('change', (e) => {
+    currentCurrency = (e.target as HTMLSelectElement).value;
+    updateAllCardPrices();
+    updateCartUI();
+  });
+
+  /* =========================================
+     CART DRAWER
+  ========================================== */
+
+  const cartSidebar = document.getElementById('cart-sidebar');
+  const cartOverlay = document.getElementById('cart-overlay');
+
+  function openCart() {
+    cartSidebar?.classList.add('open');
+    cartOverlay?.classList.add('open');
+    document.body.classList.add('cart-open');
+  }
+
+  function closeCart() {
+    cartSidebar?.classList.remove('open');
+    cartOverlay?.classList.remove('open');
+    document.body.classList.remove('cart-open');
+  }
+
+  document.getElementById('open-cart-btn')?.addEventListener('click', openCart);
+  document.getElementById('close-cart-btn')?.addEventListener('click', closeCart);
+  cartOverlay?.addEventListener('click', closeCart);
+
+  /* =========================================
+     UPDATE CART
+  ========================================== */
+
+  function cartEmptyHtml(): string {
+    return `
+      <div class="empty-cart-state">
+        <div class="empty-cart-icon">
+          <svg
+            width="42"
+            height="42"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <circle cx="9" cy="21" r="1"/>
+            <circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+        </div>
+        <h4>Keranjang masih kosong</h4>
+        <p>Tambahkan produk yang ingin Anda beli.</p>
+      </div>`;
+  }
+
+  function updateCartUI() {
+    // Simpan setiap perubahan ke localStorage (keranjang & mata uang).
+    saveCart(cart);
+    saveCartCurrency(currentCurrency);
+
+    const cartCountEl = document.getElementById('cart-count');
+    const cartHeaderCountEl = document.getElementById('cart-header-count');
+    const cartItemsEl = document.getElementById('cart-items');
+    const cartTotalPriceEl = document.getElementById('cart-total-price');
+
+    const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+
+    if (cartCountEl) {
+      cartCountEl.textContent = totalQty.toString();
+    }
+    if (cartHeaderCountEl) {
+      cartHeaderCountEl.textContent = `${totalQty} produk`;
+    }
+
+    if (cart.length === 0) {
+      if (cartItemsEl) {
+        cartItemsEl.innerHTML = cartEmptyHtml();
+      }
+      if (cartTotalPriceEl) {
+        cartTotalPriceEl.textContent = formatPrice(0, currentCurrency);
+      }
+      return;
+    }
+
+    let itemsHTML = '';
+    let grandTotal = 0;
+
+    cart.forEach((item, index) => {
+      const price = item.prices[currentCurrency] || 0;
+      const itemSubtotal = price * item.qty;
+      grandTotal += itemSubtotal;
+
+      itemsHTML += `
+        <div class="cart-item-row">
+
+          <div class="cart-item-image">
+            <img
+              src="${escapeHtml(resolveImageUrl(item.imageUrl, API_BASE))}"
+              alt="${escapeHtml(item.name)}"
+              loading="lazy"
+              onerror="this.onerror=null; this.src='/images/products/placeholder.svg';"
+            />
+          </div>
+
+          <div class="cart-item-main">
+
+            <div class="cart-item-head">
+              <h4 class="cart-item-title">${escapeHtml(item.name)}</h4>
+              <button
+                class="cart-item-remove"
+                onclick="removeCartItem(${index})"
+                title="Hapus produk"
+                aria-label="Hapus produk"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div class="cart-item-spec">
+              ${escapeHtml(item.optionName || item.category || item.spec || '')}
+            </div>
+
+            <div class="cart-item-size">
+              Kemasan:
+              <strong>${escapeHtml(item.size)}</strong>
+            </div>
+
+            <div class="cart-item-bottom">
+
+              <div class="qty-stepper">
+                <button
+                  class="stepper-btn"
+                  onclick="changeQty(${index}, -1)"
+                  aria-label="Kurangi jumlah"
+                >
+                  &minus;
+                </button>
+                <span class="stepper-val">${item.qty}</span>
+                <button
+                  class="stepper-btn"
+                  onclick="changeQty(${index}, 1)"
+                  aria-label="Tambah jumlah"
+                >
+                  +
+                </button>
+              </div>
+
+              <div class="cart-item-price-group">
+                <span class="subtotal-price">
+                  ${formatPrice(itemSubtotal, currentCurrency)}
+                </span>
+                <span class="unit-price">
+                  ${formatPrice(price, currentCurrency)} / ${escapeHtml(item.size)}
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>`;
+    });
+
+    if (cartItemsEl) {
+      cartItemsEl.innerHTML = itemsHTML;
+    }
+    if (cartTotalPriceEl) {
+      cartTotalPriceEl.textContent = formatPrice(grandTotal, currentCurrency);
+    }
+  }
+
+  /* =========================================
+     CHANGE / REMOVE QTY
+  ========================================== */
+
+  (window as any).changeQty = (index: number, delta: number) => {
+    if (!cart[index]) return;
+    cart[index].qty += delta;
+    if (cart[index].qty <= 0) {
+      cart.splice(index, 1);
+    }
+    updateCartUI();
+  };
+
+  (window as any).removeCartItem = (index: number) => {
+    if (!cart[index]) return;
+    cart.splice(index, 1);
+    updateCartUI();
+  };
+
+  /* =========================================
+     CHECKOUT GATE (login dulu, lalu /checkout)
+  ========================================== */
+
+  document.getElementById('pay-button')?.addEventListener('click', () => {
+    if (cart.length === 0) {
+      alert('Keranjang belanja Anda kosong!');
+      return;
+    }
+
+    // Keranjang sudah tersimpan oleh updateCartUI di setiap perubahan.
+    if (isLoggedIn()) {
+      window.location.replace('/checkout');
+    } else {
+      // Belum punya akun / belum masuk: login dulu, kembali ke /checkout.
+      window.location.replace('/login?next=/checkout');
+    }
+  });
+
+  /* =========================================
+     PULIHKAN SESI KERANJANG SAAT HALAMAN DIBUKA
+  ========================================== */
+
+  const currencySelectEl = document.getElementById('currency-select') as HTMLSelectElement | null;
+  if (currencySelectEl) {
+    currencySelectEl.value = currentCurrency;
+  }
+  updateAllCardPrices();
+  updateCartUI();
+
+  /* =========================================
+     SINKRONISASI KATALOG DARI BACKEND
+     (produk/opsi/varian yang dikelola admin
+     langsung muncul tanpa build ulang)
+  ========================================== */
+
+  (async function loadLiveCatalog() {
+    try {
+      const nextGroups = await fetchCatalog(API_BASE);
+      if (nextGroups.length === 0) return; // DB kosong → pertahankan fallback statis
+
+      const dataChanged = JSON.stringify(nextGroups) !== JSON.stringify(groups);
+      if (!dataChanged) return;
+
+      groups = nextGroups;
+      categories = catalogCategoriesFor(groups);
+      initSelectedState();
+      rerenderCards();
+      rerenderCategoryPills();
+    } catch (error) {
+      console.warn('Gagal memuat katalog dari API — memakai data statis.', error);
+    }
+  })();
+</script>

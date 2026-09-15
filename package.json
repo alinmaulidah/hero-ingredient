@@ -1,5 +1,5 @@
 {
-  "name": "grateful-galaxy",
+  "name": "company-profile",
   "type": "module",
   "version": "0.0.1",
   "engines": {
@@ -12,9 +12,6 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.3.2"
-  },
-  "allowScripts": {
-    "esbuild": true
+    "astro": "^7.2.0"
   }
 }

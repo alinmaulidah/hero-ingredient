@@ -1,0 +1,385 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { company } from '../data/company';
+
+const { address, hours, brand } = company;
+---
+
+<Layout title={`Hubungi Kami - ${brand.siteName}`}>
+  <main class="contact-page">
+    <!-- MAIN CONTENT SECTION -->
+    <section class="contact-section">
+      <div class="container contact-grid">
+
+        <!-- JAM OPERASIONAL & LOKASI -->
+        <div class="contact-info">
+          <div class="info-list">
+            <!-- Jam Operasional -->
+            <div class="info-item">
+              <div class="info-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+              <div>
+                <span class="info-label" data-lang-id="Jam Operasional" data-lang-en="Business Hours">Jam Operasional</span>
+                {hours.map((h) => (
+                  <p class="info-value">{h.days}: {h.time}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <!-- EMBED MAPS -->
+          <div class="map-box">
+            <iframe
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(address.factory.mapsQuery)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+              width="100%"
+              height="200"
+              style="border:0;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+            <a
+              href={`https://maps.google.com/maps?q=${encodeURIComponent(address.factory.mapsQuery)}`}
+              target="_blank"
+              class="map-btn"
+              data-lang-id="Buka di Google Maps"
+              data-lang-en="Open in Google Maps"
+            >
+              Buka di Google Maps &rarr;
+            </a>
+          </div>
+        </div>
+
+        <!-- FORMULIR KONTAK -->
+        <div class="contact-form-card">
+          <h2 data-lang-id="Kirim Pesan" data-lang-en="Send a Message">Kirim Pesan</h2>
+
+          <form class="contact-form">
+            <div class="form-group">
+              <label for="nama" data-lang-id="Nama Lengkap" data-lang-en="Full Name">Nama Lengkap *</label>
+              <input type="text" id="nama" data-lang-id="Masukkan nama Anda" data-lang-en="Enter your name" placeholder="Masukkan nama Anda" required />
+            </div>
+
+            <div class="form-group">
+              <label for="email" data-lang-id="Email Perusahaan / Pribadi" data-lang-en="Company / Personal Email">Email Perusahaan / Pribadi *</label>
+              <input type="email" id="email" data-lang-id="contoh@perusahaan.com" data-lang-en="name@company.com" placeholder="contoh@perusahaan.com" required />
+            </div>
+
+            <div class="form-group">
+              <label for="telepon" data-lang-id="Nomor Telepon / WhatsApp" data-lang-en="Phone / WhatsApp Number">Nomor Telepon / WhatsApp *</label>
+              <input type="tel" id="telepon" data-lang-id="+62 812xxxxxxx" data-lang-en="+62 812xxxxxxx" placeholder="+62 812xxxxxxx" required />
+            </div>
+
+            <div class="form-group">
+              <label for="market" data-lang-id="Kategori Pasar" data-lang-en="Market Category">Kategori Pasar *</label>
+              <select id="market" required>
+                <option value="" data-lang-id="-- Pilih Kategori Pasar --" data-lang-en="-- Select Market Category --">-- Pilih Kategori Pasar --</option>
+                <option value="Lokal" data-lang-id="Pasar Lokal (Indonesia)" data-lang-en="Local Market (Indonesia)">Pasar Lokal (Indonesia)</option>
+                <option value="Export" data-lang-id="Pasar Export (Mancanegara)" data-lang-en="Export Market (International)">Pasar Export (Mancanegara)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="pesan" data-lang-id="Pesan / Detail Kebutuhan Bahan Baku" data-lang-en="Message / Raw Material Requirements Detail">Pesan / Detail Kebutuhan Bahan Baku *</label>
+              <textarea id="pesan" rows="4" data-lang-id="Jelaskan jenis bahan baku, perkiraan kuantitas, atau spesifikasi yang Anda butuhkan..." data-lang-en="Describe the type of raw material, estimated quantity, or specifications you need..." placeholder="Jelaskan jenis bahan baku, perkiraan kuantitas, atau spesifikasi yang Anda butuhkan..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit" id="contact-submit-btn" data-lang-id="Kirim Pesan Sekarang" data-lang-en="Send Message Now">Kirim Pesan Sekarang</button>
+          </form>
+
+          <!-- Status kirim (success/error) -->
+          <p id="form-status" class="form-status" hidden></p>
+        </div>
+
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .contact-page {
+    background-color: var(--bg-light);
+    min-height: 80vh;
+    font-family: var(--font-sans);
+  }
+
+  /* SECTION & GRID */
+  .contact-section {
+    padding: 4rem 0;
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  /* INFORMASI PERUSAHAAN */
+  .info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .info-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--white);
+    padding: 1.25rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .info-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(45, 106, 79, 0.08);
+  }
+
+  .info-icon {
+    background: #e8f5e9;
+    color: var(--primary);
+    padding: 0.75rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .info-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  .info-value {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    margin: 0 0 0.15rem 0;
+    line-height: 1.4;
+  }
+
+  /* MAP BOX */
+  .map-box {
+    margin-top: 1.5rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--white);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+
+  .map-box iframe {
+    display: block;
+  }
+
+  .map-btn {
+    display: block;
+    text-align: center;
+    padding: 0.75rem;
+    background: var(--white);
+    color: var(--primary-dark);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-top: 1px solid var(--border);
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .map-btn:hover {
+    background: var(--primary);
+    color: var(--white);
+  }
+
+  /* FORM CARD */
+  .contact-form-card {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .contact-form-card h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 0.35rem;
+  }
+
+  .form-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition: all 0.2s;
+    background-color: #fbfcfc;
+    font-family: var(--font-sans);
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: var(--white);
+    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+  }
+
+  .btn-submit {
+    width: 100%;
+    background-color: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    margin-top: 0.5rem;
+  }
+
+  .btn-submit:hover {
+    background-color: var(--primary-dark);
+  }
+
+  .btn-submit:active {
+    transform: scale(0.99);
+  }
+
+  .btn-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  /* Status pengiriman form */
+  .form-status {
+    margin-top: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
+  .form-status.form-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+  }
+
+  .form-status.form-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .contact-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .contact-form-card {
+      padding: 1.75rem;
+    }
+  }
+</style>
+
+<script>
+  const API_BASE = (import.meta.env.PUBLIC_API_BASE || '').replace(/\/$/, '');
+
+  const form = document.querySelector<HTMLFormElement>('.contact-form');
+  const statusEl = document.getElementById('form-status');
+  const submitBtn = document.getElementById('contact-submit-btn') as HTMLButtonElement | null;
+
+  function showStatus(message: string, type: 'form-success' | 'form-error'): void {
+    if (!statusEl) return;
+    statusEl.textContent = message;
+    statusEl.className = `form-status ${type}`;
+    statusEl.hidden = false;
+    statusEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (statusEl) statusEl.hidden = true;
+
+    const payload = {
+      name: (document.getElementById('nama') as HTMLInputElement).value.trim(),
+      email: (document.getElementById('email') as HTMLInputElement).value.trim(),
+      phone: (document.getElementById('telepon') as HTMLInputElement).value.trim(),
+      market: (document.getElementById('market') as HTMLSelectElement).value,
+      message: (document.getElementById('pesan') as HTMLTextAreaElement).value.trim()
+    };
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Mengirim...';
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.success) {
+        showStatus(
+          'Terima kasih! Pesan Anda sudah kami terima dan akan segera direspons.',
+          'form-success'
+        );
+        form.reset();
+      } else {
+        showStatus(
+          (data && data.message) || 'Gagal mengirim pesan. Silakan coba lagi.',
+          'form-error'
+        );
+      }
+    } catch (err) {
+      console.error('Contact form error:', err);
+      showStatus('Terjadi kesalahan koneksi. Silakan coba lagi.', 'form-error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Kirim Pesan Sekarang';
+      }
+    }
+  });
+</script>
