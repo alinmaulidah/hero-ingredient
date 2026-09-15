@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { company } from '../data/company';
 
 const CLIENT_KEY = import.meta.env.PUBLIC_MIDTRANS_CLIENT_KEY || '';
 
@@ -8,7 +9,7 @@ const envProdFlag = String(import.meta.env.PUBLIC_MIDTRANS_IS_PRODUCTION ?? '').
 const isMidtransProduction = envProdFlag === '' ? CLIENT_KEY.startsWith('Mid-client-') : envProdFlag === 'true';
 ---
 
-<Layout title="Checkout - " stylesheet="/styles/checkout.css">
+<Layout title={`Checkout - ${company.brand.siteName}`} stylesheet="/styles/checkout.css">
 
   <!-- Halaman checkout wajib login: tanpa sesi → arahkan ke /login. -->
   <script is:inline>

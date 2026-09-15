@@ -1,0 +1,7 @@
+# Taste
+- Communicates in Indonesian (Bahasa Indonesia, informal register with "kamu"); expects replies and user-facing content in Indonesian. Confidence: 0.9
+- Prefers pragmatic, incremental extension of a working stack over rewrites or framework migrations — e.g., keeping an existing Express 5 + MySQL backend and layering a React admin UI on top rather than migrating to a Next.js monolith, when the project scale (B2B) doesn't justify a rewrite. Confidence: 0.55
+- Prefers reusing/consolidating code from earlier projects over building or duplicating it — e.g., wiring a new frontend to a backend + admin already written for a prior project and running it as one server instead of creating a fresh backend. Confidence: 0.65
+- Keeps related past projects side by side on disk (folders under `D:\intern`, named after the domain) and expects the agent to find and inspect them when a related task comes up. Confidence: 0.55
+- When renaming/rebranding, expects the change applied exhaustively and consistently — every brand string, page title, email/domain, site config, package name and lockfile — with verification that no occurrence of the old name remains. Confidence: 0.65
+- Prefers a single focused public-facing site per project rather than shipping an extra admin UI alongside it; dead features should be deleted outright (pages, layouts, styles, libs) and leftover comments/references cleaned up. Confidence: 0.5

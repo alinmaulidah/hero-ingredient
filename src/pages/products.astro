@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { productGroups } from '../data/products';
+import { company } from '../data/company';
 import { buildCategoryPillsHtml, buildGridHtml } from '../lib/catalogHtml';
 import { catalogCategoriesFor, fromStaticData, type CatalogGroup } from '../lib/catalogData';
 
@@ -13,7 +14,7 @@ const fallbackGroups: CatalogGroup[] = fromStaticData(productGroups);
 const fallbackCategories = catalogCategoriesFor(fallbackGroups);
 ---
 
-<Layout title="Katalog Produk - " stylesheet="/styles/products.css">
+<Layout title={`Katalog Produk - ${company.brand.siteName}`} stylesheet="/styles/products.css">
 
   <main class="products-page">
 

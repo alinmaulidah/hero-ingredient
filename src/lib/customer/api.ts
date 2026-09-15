@@ -2,8 +2,7 @@
  * ============================================================
  * CLIENT API UNTUK STOREFRONT (PELANGGAN)
  * ============================================================
- * - Terpisah dari lib/admin/api.ts: token disimpan di key yang berbeda
- *   (hero_customer_token) agar tidak tertukar dengan sesi admin.
+ * - Token sesi pelanggan disimpan di key hero_customer_token (localStorage).
  * - Semua request di bawah /checkout & /login memakai token pelanggan.
  * - Respon 401 otomatis logout (hapus token) & arahkan ke /login.
  */

@@ -14,17 +14,17 @@
 export const company = {
   /** Nama brand yang tampil di logo & halaman */
   brand: {
-    // Satu-satunya sumber brand untuk Navbar, Footer, judul halaman, dan panel
-    // admin. Logo dibagi dua bagian (logoMain + logoSub) dan selalu tampil
+    // Satu-satunya sumber brand untuk Navbar, Footer, dan judul halaman.
+    // Logo dibagi dua bagian (logoMain + logoSub) dan selalu tampil
     // dengan satu spasi di antaranya.
-    siteName: 'Indonesia Ingredients',
-    logoMain: 'INDONESIA',
-    logoSub: 'INGREDIENTS',
-    ariaLabel: 'Indonesia Ingredients',
+    siteName: 'Hero Ingredient',
+    logoMain: 'HERO',
+    logoSub: 'INGREDIENT',
+    ariaLabel: 'Hero Ingredient',
 
     /** Nama badan hukum */
     // verifikasi: dipakai di pesan default WhatsApp (WhatsAppButton) & konteks legal.
-    legalName: 'PT Panca Nature Internasional',
+    legalName: 'Hero Ingredient',
 
     tagline: {
       id: 'Bahan Baku Alam Dengan Proses Terbaik',
@@ -35,9 +35,9 @@ export const company = {
   /** Info kontak */
   contact: {
     // Email resmi yang dipakai di footer, halaman kontak, dsb.
-    email: 'info@indonesiaingredient.com',
+    email: 'info@heroingredient.com',
     // Domain resmi — samakan dengan `site` di astro.config.mjs.
-    website: 'indonesiaingredient.com',
+    website: 'heroingredient.com',
     phoneDisplay: '+62 21 8459 1234',
     whatsappDisplay: '+62 823 451 417',
     /** Format internasional tanpa "+" / spasi, untuk https://wa.me/ */
@@ -78,7 +78,7 @@ export const company = {
 
   /** Meta default (dipakai Layout bila halaman tidak mengirim title) */
   meta: {
-    defaultTitle: 'Indonesia Ingredients - Natural Raw Materials',
+    defaultTitle: 'Hero Ingredient - Natural Raw Materials',
   },
 };
 
